@@ -1,0 +1,14 @@
+name: twitter_networks
+version: 0.1.0
+
+authors:
+  - Ayman Karim <akarim1@terpmail.umd.edu>
+  
+dependencies:
+  crystweet:
+    github: akarimcheese/crystweet
+    branch: master
+
+crystal: 0.23.1
+
+license: MIT
