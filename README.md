@@ -35,10 +35,10 @@ network = Network.new(
 Add users to network
 
 ```crystal
-network.add_users(["JohnCena", "KimKardashian", "BarackObama", "BillGates"])
+network.add_users(["JODYHiGHROLLER", "KimKardashian", "BarackObama", "BillGates"])
 
 puts network.graph.inspect
-# {"JohnCena" => ["KimKardashian", "BarackObama", "BillGates"], "KimKardashian" => ["BarackObama"], "BarackObama" => [], "BillGates" => ["BarackObama"]}
+# {"JODYHiGHROLLER" => ["KimKardashian", "BarackObama", "BillGates"], "KimKardashian" => ["BarackObama"], "BarackObama" => [], "BillGates" => ["BarackObama"]}
 ```
 
 Print a message when Twitter rate limits occur
@@ -56,11 +56,11 @@ network.on_relationship_found { |follower, followed|
   puts "Twitter Networks has found that #{follower} follows #{followed}!"
 }
 
-network.add_user("JODYHiGHROLLER")
+network.add_user("JohnCena")
 # Twitter Networks has found that JODYHiGHROLLER follows JohnCena!
-# Twitter Networks has found that JODYHiGHROLLER follows KimKardashian!
-# Twitter Networks has found that JODYHiGHROLLER follows BarackObama!
-# Twitter Networks has found that JODYHiGHROLLER follows BillGates!
+# Twitter Networks has found that JohnCena follows KimKardashian!
+# Twitter Networks has found that JohnCena follows BarackObama!
+# Twitter Networks has found that JohnCena follows BillGates!
 ```
 
 Get the network as a csv string

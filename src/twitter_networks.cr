@@ -121,7 +121,7 @@ module TwitterNetworks
     #     ENV["TWITTER_ACCESS_SECRET"]
     # )
     
-    # network.add_users(["JohnCena", "KimKardashian", "BarackObama", "BillGates"])
+    # network.add_users(["JODYHiGHROLLER", "KimKardashian", "BarackObama", "BillGates"])
     
     # puts network.graph.inspect
     
@@ -133,7 +133,7 @@ module TwitterNetworks
     #   puts "Twitter Networks has found that #{follower} follows #{followed}!"
     # }
     
-    # network.add_user("JODYHiGHROLLER")
+    # network.add_user("JohnCena")
     
     # puts network.graph.inspect
     
