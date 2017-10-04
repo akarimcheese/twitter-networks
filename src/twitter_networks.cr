@@ -4,6 +4,7 @@ require "crystweet"
 module TwitterNetworks
     class Network
         property rest_client : Twitter::Rest::Client
+        property stream_client : Twitter::Stream::Client
         property graph : Hash(String, Array(String))
         
         def initialize(twitter_consumer_key, twitter_consumer_secret, twitter_access_token, twitter_access_secret)
@@ -15,8 +16,16 @@ module TwitterNetworks
                 twitter_access_secret
             ).persistent(on_rate_limit)
             
+            @stream_client = Twitter::Stream::Client.new(
+                twitter_consumer_key,
+                twitter_consumer_secret,
+                twitter_access_token,
+                twitter_access_secret
+            ).include(:retweet, :quote, :reply)
+            
             # Follower => Followed
             @graph = {} of String => Array(String)
+            @user_id_table = {} of String => UInt64
         end
         
         def on_rate_limit(&block)
@@ -49,6 +58,11 @@ module TwitterNetworks
             }
             
             @graph[screen_name] = following
+            
+            user_request = @rest_client.user(screen_name)
+            user_id = user_request.show().id
+                
+            @user_id_table[screen_name] = user_id
         end
         
         def add_users(screen_names)
@@ -89,6 +103,17 @@ module TwitterNetworks
             
             string_builder
         end
+        
+        # TODO: don't include retweets/quotes/replies of users in network,
+        # instead include only retweets/quotes/replies from users in network.
+        # Current code will include retweets/quotes/replies of users in network
+        # def stream
+        #     user_ids = @user_id_table.values
+            
+        #     @stream_client.stream(follow: user_ids) { |tweet|
+        #         yield tweet
+        #     }
+        # end
     end
     
     struct Edge
@@ -136,6 +161,10 @@ module TwitterNetworks
     # network.add_user("JohnCena")
     
     # puts network.graph.inspect
+    
+    # network.stream do |tweet|
+    #     puts tweet.text
+    # end
     
     # network_csv = network.to_csv_string
 

@@ -5,6 +5,9 @@ A library for tools to create Twitter Networks in Crystal. In progress.
 Feel free to contribute with any features you see fit! I'm looking to 
 add some community detection algos and stuff.
 
+Possible Inspirations:
+* [Community Detection in Political Twitter Networks using Nonnegative Matrix Factorization Methods](https://arxiv.org/pdf/1608.01771.pdf)
+
 ## Installation
 
 Add this to your application's `shard.yml`:
