@@ -126,7 +126,7 @@ module TwitterNetworks
     # puts network.graph.inspect
     
     # network.on_rate_limit {
-    #     puts "Twitter Rate Limit reached. Sleeping for 15 minutes..."
+    #     puts "Twitter Rate Limit reached. Sleeping for 5 minutes..."
     # }
     
     # network.on_relationship_found { |follower, followed|

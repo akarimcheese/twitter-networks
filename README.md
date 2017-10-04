@@ -45,7 +45,7 @@ Print a message when Twitter rate limits occur
 
 ```crystal
 network.on_rate_limit {
-  puts "Twitter Rate Limit reached. Sleeping for 15 minutes..."
+  puts "Twitter Rate Limit reached. Sleeping for 5 minutes..."
 }
 ```
 
