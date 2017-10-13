@@ -25,6 +25,9 @@ module TwitterNetworks
             
             # Follower => Followed
             @graph = {} of String => Array(String)
+            # Followed => Follower
+            @reverse_graph = {} of String => Array(String)
+            
             @user_id_table = {} of String => UInt64
         end
         
@@ -38,8 +41,20 @@ module TwitterNetworks
             self
         end
         
+        def on_user_added(&block : String -> Void)
+            @on_user_added_callback = block
+            self
+        end
+        
         def add_user(screen_name)
-            following = @graph.keys.select { |target_screen_name|
+            if callback = @on_user_added_callback
+                callback.call(screen_name)
+            end
+            
+            following = [] of String
+            followers = [] of String
+            
+            @graph.keys.each { |target_screen_name|
                 relationship_request = @rest_client.relationship(screen_name, target_screen_name)
                 
                 relationship = relationship_request.show()
@@ -49,15 +64,22 @@ module TwitterNetworks
                         callback.call(target_screen_name, screen_name)
                     end
                     @graph[target_screen_name] << screen_name
+                    followers << target_screen_name
                 end
                 
-                if relationship.source.following && (callback = @on_relationship_found_callback)
-                    callback.call(screen_name, target_screen_name)
+                if relationship.source.following 
+                    @reverse_graph[target_screen_name] << screen_name
+                    following << target_screen_name
+                    
+                    if callback = @on_relationship_found_callback
+                        callback.call(screen_name, target_screen_name)
+                    end
                 end
                 relationship.source.following
             }
             
             @graph[screen_name] = following
+            @reverse_graph[screen_name] = followers
             
             user_request = @rest_client.user(screen_name)
             user_id = user_request.show().id
@@ -77,6 +99,10 @@ module TwitterNetworks
                     yield follower, followed
                 }
             }
+        end
+        
+        def nodes
+            @graph.keys
         end
         
         def edges : Array(Edge)
@@ -104,16 +130,19 @@ module TwitterNetworks
             string_builder
         end
         
-        # TODO: don't include retweets/quotes/replies of users in network,
-        # instead include only retweets/quotes/replies from users in network.
-        # Current code will include retweets/quotes/replies of users in network
-        # def stream
-        #     user_ids = @user_id_table.values
+        def stream_from_network
+            user_ids = @user_id_table.values
             
-        #     @stream_client.stream(follow: user_ids) { |tweet|
-        #         yield tweet
-        #     }
-        # end
+            @stream_client.stream(follow: user_ids) { |tweet|
+                if tweet_from_network(tweet)
+                    yield tweet
+                end
+            }
+        end
+        
+        def tweet_from_network(tweet : Twitter::Response::Tweet)
+            @user_id_table.has_key?(tweet.user.screen_name)
+        end
     end
     
     struct Edge
@@ -146,25 +175,30 @@ module TwitterNetworks
     #     ENV["TWITTER_ACCESS_SECRET"]
     # )
     
-    # network.add_users(["JODYHiGHROLLER", "KimKardashian", "BarackObama", "BillGates"])
-    
-    # puts network.graph.inspect
+    # network.on_relationship_found { |follower, followed|
+    #   puts "Twitter Networks has found that #{follower} follows #{followed}!"
+    # }
     
     # network.on_rate_limit {
     #     puts "Twitter Rate Limit reached. Sleeping for 5 minutes..."
     # }
     
-    # network.on_relationship_found { |follower, followed|
-    #   puts "Twitter Networks has found that #{follower} follows #{followed}!"
-    # }
-    
-    # network.add_user("JohnCena")
+    # network.add_users([
+    #     "wweromanreigns", 
+    #     "JohnCena", 
+    #     "AJStylesOrg", 
+    #     "RandyOrton",
+    #     "JEFFHARDYBRAND",
+    #     "MATTHARDYBRAND",
+    #     "FightOwensFight",
+    #     "HEELZiggler",
+    #     "BaronCorbinWWE",
+    #     "FinnBalor"
+    # ])
     
     # puts network.graph.inspect
     
-    # network.stream do |tweet|
-    #     puts tweet.text
-    # end
+    # puts network.graph.inspect
     
     # network_csv = network.to_csv_string
 
