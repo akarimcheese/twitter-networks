@@ -143,6 +143,14 @@ module TwitterNetworks
         def tweet_from_network(tweet : Twitter::Response::Tweet)
             @user_id_table.has_key?(tweet.user.screen_name)
         end
+        
+        def indegree_centrality(screen_name)
+            @reverse_graph[screen_name].size.to_f / (nodes.size - 1)
+        end
+        
+        def outdegree_centrality(screen_name)
+            @graph[screen_name].size.to_f / (nodes.size - 1)
+        end
     end
     
     struct Edge
