@@ -47,14 +47,16 @@ module Twitter
         end
         
         def add_user(screen_name)
+            following = [] of String
+            followers = [] of String
+            
             # TODO: Check if user exists. Call error callback if not.
+            @graph[screen_name] = following
+            @reverse_graph[screen_name] = followers
             if callback = @on_user_added_callback
                 user = @rest_client.user(screen_name).show()
                 callback.call(user)
             end
-            
-            following = [] of String
-            followers = [] of String
             
             @graph.keys.each { |target_screen_name|
                 relationship_request = @rest_client.relationship(screen_name, target_screen_name)
@@ -79,9 +81,6 @@ module Twitter
                 end
                 relationship.source.following
             }
-            
-            @graph[screen_name] = following
-            @reverse_graph[screen_name] = followers
             
             user_request = @rest_client.user(screen_name)
             user_id = user_request.show().id
