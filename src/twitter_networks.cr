@@ -95,16 +95,22 @@ module Twitter
             end
         end
         
+        def each_node
+            @graph.keys.each { |node|
+                yield node
+            }
+        end
+        
+        def nodes
+            @graph.keys
+        end
+        
         def each_edge
             @graph.keys.each { |follower|
                 @graph[follower].each { |followed|
                     yield follower, followed
                 }
             }
-        end
-        
-        def nodes
-            @graph.keys
         end
         
         def edges : Array(Edge)
