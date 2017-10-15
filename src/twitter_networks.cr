@@ -1,7 +1,7 @@
 require "./twitter_networks/*"
 require "crystweet"
 
-module TwitterNetworks
+module Twitter
     class Network
         property rest_client : Twitter::Rest::Client
         property stream_client : Twitter::Stream::Client
@@ -41,14 +41,16 @@ module TwitterNetworks
             self
         end
         
-        def on_user_added(&block : String -> Void)
+        def on_user_added(&block : Twitter::Response::User -> Void)
             @on_user_added_callback = block
             self
         end
         
         def add_user(screen_name)
+            # TODO: Check if user exists. Call error callback if not.
             if callback = @on_user_added_callback
-                callback.call(screen_name)
+                user = @rest_client.user(screen_name).show()
+                callback.call(user)
             end
             
             following = [] of String
@@ -144,12 +146,24 @@ module TwitterNetworks
             @user_id_table.has_key?(tweet.user.screen_name)
         end
         
+        def indegree(screen_name)
+            @reverse_graph[screen_name].size
+        end
+        
+        def outdegree(screen_name)
+            @graph[screen_name].size
+        end
+        
         def indegree_centrality(screen_name)
             @reverse_graph[screen_name].size.to_f / (nodes.size - 1)
         end
         
         def outdegree_centrality(screen_name)
             @graph[screen_name].size.to_f / (nodes.size - 1)
+        end
+        
+        def has_edge?(source, target)
+            return @graph[source].includes?(target)
         end
     end
     
@@ -175,40 +189,4 @@ module TwitterNetworks
             "#{source}, #{target}"
         end
     end
-    
-    # network = Network.new(
-    #     ENV["TWITTER_CONSUMER_KEY"], 
-    #     ENV["TWITTER_CONSUMER_SECRET"], 
-    #     ENV["TWITTER_ACCESS_TOKEN"],
-    #     ENV["TWITTER_ACCESS_SECRET"]
-    # )
-    
-    # network.on_relationship_found { |follower, followed|
-    #   puts "Twitter Networks has found that #{follower} follows #{followed}!"
-    # }
-    
-    # network.on_rate_limit {
-    #     puts "Twitter Rate Limit reached. Sleeping for 5 minutes..."
-    # }
-    
-    # network.add_users([
-    #     "wweromanreigns", 
-    #     "JohnCena", 
-    #     "AJStylesOrg", 
-    #     "RandyOrton",
-    #     "JEFFHARDYBRAND",
-    #     "MATTHARDYBRAND",
-    #     "FightOwensFight",
-    #     "HEELZiggler",
-    #     "BaronCorbinWWE",
-    #     "FinnBalor"
-    # ])
-    
-    # puts network.graph.inspect
-    
-    # puts network.graph.inspect
-    
-    # network_csv = network.to_csv_string
-
-    # File.write("network.csv", network_csv)
 end
