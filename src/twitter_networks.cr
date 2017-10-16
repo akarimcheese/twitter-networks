@@ -55,8 +55,6 @@ module Twitter
             # TODO: Check if user exists. Call error callback if not.
             user = @rest_client.user(screen_name).show()
             @user_id_table[screen_name] = user.id
-            @graph[screen_name] = following
-            @reverse_graph[screen_name] = followers
             
             if callback = @on_user_added_callback
                 callback.call(user)
@@ -85,6 +83,9 @@ module Twitter
                 end
                 relationship.source.following
             }
+            
+            @graph[screen_name] = following
+            @reverse_graph[screen_name] = followers
         end
         
         def add_users(screen_names)
@@ -94,13 +95,13 @@ module Twitter
         end
         
         def each_node
-            @graph.keys.each { |node|
+            @user_id_table.keys.each { |node|
                 yield node
             }
         end
         
         def nodes
-            @graph.keys
+            @user_id_table.keys
         end
         
         def each_edge
