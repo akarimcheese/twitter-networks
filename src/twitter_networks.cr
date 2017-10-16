@@ -28,6 +28,8 @@ module Twitter
             # Followed => Follower
             @reverse_graph = {} of String => Array(String)
             
+            # TODO: Change to user data table, to store all Twitter data for user
+            # not just the id
             @user_id_table = {} of String => UInt64
         end
         
@@ -51,10 +53,12 @@ module Twitter
             followers = [] of String
             
             # TODO: Check if user exists. Call error callback if not.
+            user = @rest_client.user(screen_name).show()
+            @user_id_table[screen_name] = user.id
             @graph[screen_name] = following
             @reverse_graph[screen_name] = followers
+            
             if callback = @on_user_added_callback
-                user = @rest_client.user(screen_name).show()
                 callback.call(user)
             end
             
@@ -81,11 +85,6 @@ module Twitter
                 end
                 relationship.source.following
             }
-            
-            user_request = @rest_client.user(screen_name)
-            user_id = user_request.show().id
-                
-            @user_id_table[screen_name] = user_id
         end
         
         def add_users(screen_names)
