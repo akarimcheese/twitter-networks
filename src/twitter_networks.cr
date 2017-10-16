@@ -31,6 +31,8 @@ module Twitter
             # TODO: Change to user data table, to store all Twitter data for user
             # not just the id
             @user_id_table = {} of String => UInt64
+            
+            @lock = Mutex.new
         end
         
         def on_rate_limit(&block)
@@ -60,6 +62,7 @@ module Twitter
                 callback.call(user)
             end
             
+            @lock.lock
             @graph.keys.each { |target_screen_name|
                 relationship_request = @rest_client.relationship(screen_name, target_screen_name)
                 
@@ -86,6 +89,7 @@ module Twitter
             
             @graph[screen_name] = following
             @reverse_graph[screen_name] = followers
+            @lock.unlock
         end
         
         def add_users(screen_names)
