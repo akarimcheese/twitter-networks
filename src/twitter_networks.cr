@@ -32,7 +32,7 @@ module Twitter
             
             # TODO: Change to user data table, to store all Twitter data for user
             # not just the id
-            @user_info_table = {} of String => UInt64
+            @user_info_table = {} of String => Twitter::Response::User
             
             @lock = Mutex.new
         end
