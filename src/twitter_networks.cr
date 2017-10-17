@@ -23,6 +23,8 @@ module Twitter
                 twitter_access_secret
             ).include(:retweet, :quote, :reply)
             
+            @nodes = Set.new()
+            
             # Follower => Followed
             @graph = {} of String => Array(String)
             # Followed => Follower
@@ -30,7 +32,7 @@ module Twitter
             
             # TODO: Change to user data table, to store all Twitter data for user
             # not just the id
-            @user_id_table = {} of String => UInt64
+            @user_info_table = {} of String => UInt64
             
             @lock = Mutex.new
         end
@@ -56,7 +58,8 @@ module Twitter
             
             # TODO: Check if user exists. Call error callback if not.
             user = @rest_client.user(screen_name).show()
-            @user_id_table[screen_name] = user.id
+            @user_info_table[screen_name.downcase] = user
+            @nodes << screen_name
             
             if callback = @on_user_added_callback
                 callback.call(user)
@@ -99,13 +102,13 @@ module Twitter
         end
         
         def each_node
-            @user_id_table.keys.each { |node|
+            @nodes.each { |node|
                 yield node
             }
         end
         
         def nodes
-            @user_id_table.keys
+            @nodes
         end
         
         def each_edge
@@ -142,7 +145,7 @@ module Twitter
         end
         
         def stream_from_network
-            user_ids = @user_id_table.values
+            user_ids = @user_info_table.values.map { |user| user.id }
             
             @stream_client.stream(follow: user_ids) { |tweet|
                 if tweet_from_network(tweet)
@@ -152,7 +155,7 @@ module Twitter
         end
         
         def tweet_from_network(tweet : Twitter::Response::Tweet)
-            @user_id_table.has_key?(tweet.user.screen_name)
+            @user_info_table.has_key?(tweet.user.screen_name.downcase)
         end
         
         def indegree(screen_name)
@@ -164,11 +167,11 @@ module Twitter
         end
         
         def indegree_centrality(screen_name)
-            @reverse_graph[screen_name].size.to_f / (nodes.size - 1)
+            @reverse_graph[screen_name].size.to_f / (@graph.keys.size - 1)
         end
         
         def outdegree_centrality(screen_name)
-            @graph[screen_name].size.to_f / (nodes.size - 1)
+            @graph[screen_name].size.to_f / (@graph.keys.size - 1)
         end
         
         def has_edge?(source, target)
