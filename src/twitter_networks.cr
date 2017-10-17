@@ -23,7 +23,7 @@ module Twitter
                 twitter_access_secret
             ).include(:retweet, :quote, :reply)
             
-            @nodes = Set.new()
+            @nodes = Set(String).new()
             
             # Follower => Followed
             @graph = {} of String => Array(String)
