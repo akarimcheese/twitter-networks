@@ -101,6 +101,12 @@ module Twitter
             end
         end
         
+        def each_user
+            @user_info_table.values.each do |user|
+                yield user
+            end
+        end
+        
         def each_node
             @nodes.each { |node|
                 yield node
